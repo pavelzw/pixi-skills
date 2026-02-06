@@ -1,0 +1,68 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm", "wheel"]
+
+[tool.setuptools_scm]
+version_scheme = "post-release"
+
+[project]
+name = "pixi-skills"
+description = "Manage coding agent skills using pixi"
+authors = [{ name = "Pavel Zwerschke", email = "pavelzw@gmail.com" }]
+dynamic = ["version"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.13",
+]
+requires-python = ">=3.13"
+readme = "README.md"
+dependencies = []
+
+[project.urls]
+repository = "https://github.com/pavelzw/pixi-skills"
+
+[tool.setuptools.packages.find]
+include = ["pixi_skills"]
+
+[project.scripts]
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+ignore = [
+  "N803", # https://docs.astral.sh/ruff/rules/invalid-argument-name
+  "N806", # https://docs.astral.sh/ruff/rules/non-lowercase-variable-in-function
+  "E501", # https://docs.astral.sh/ruff/faq/#is-the-ruff-linter-compatible-with-black
+]
+select = [
+  # pyflakes
+  "F",
+  # pycodestyle
+  "E",
+  "W",
+  # isort
+  "I",
+  # pep8-naming
+  "N",
+  # pyupgrade
+  "UP",
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+
+[tool.mypy]
+python_version = '3.13'
+no_implicit_optional = true
+check_untyped_defs = true
+
+# If you run into `missing library stubs or py.typed marker` errors
+# and no stubs are available for this library, you can add an override
+# to ignore the missing imports.
+# [[tool.mypy.overrides]]
+# module = ["my_module"]
+# ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

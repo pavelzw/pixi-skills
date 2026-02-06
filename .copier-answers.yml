@@ -1,0 +1,12 @@
+# This file is managed by Copier; DO NOT EDIT OR REMOVE.
+_commit: v0.4.1
+_src_path: https://github.com/quantco/copier-template-python-open-source
+add_autobump_workflow: true
+author_email: pavelzw@gmail.com
+author_name: Pavel Zwerschke
+github_url: https://github.com/pavelzw/pixi-skills
+github_user: pavelzw
+minimal_python_version: py313
+project_short_description: Manage coding agent skills using pixi
+project_slug: pixi-skills
+use_devcontainer: false
