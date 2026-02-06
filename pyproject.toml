@@ -1,29 +1,29 @@
 [build-system]
-requires = ["setuptools", "setuptools-scm", "wheel"]
-
-[tool.setuptools_scm]
-version_scheme = "post-release"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "pixi-skills"
 description = "Manage coding agent skills using pixi"
+# replaced in CI
+version = "0.0.0"
 authors = [{ name = "Pavel Zwerschke", email = "pavelzw@gmail.com" }]
-dynamic = ["version"]
 classifiers = [
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.13",
 ]
 requires-python = ">=3.13"
 readme = "README.md"
-dependencies = []
+dependencies = ["typer>=0.12", "rich>=13", "questionary>=2"]
 
 [project.urls]
 repository = "https://github.com/pavelzw/pixi-skills"
 
-[tool.setuptools.packages.find]
-include = ["pixi_skills"]
+[tool.hatch.build.targets.wheel]
+packages = ["pixi_skills"]
 
 [project.scripts]
+pixi-skills = "pixi_skills.cli:app"
 
 [tool.ruff]
 line-length = 88
