@@ -54,11 +54,15 @@ class TestBackendRegistry:
     ],
 )
 class TestGetSkillsDir:
-    def test_local(self, backend_cls: type[Backend], local_dir: str, global_suffix: str) -> None:
+    def test_local(
+        self, backend_cls: type[Backend], local_dir: str, global_suffix: str
+    ) -> None:
         backend = backend_cls()
         assert backend.get_skills_dir(Scope.LOCAL) == Path(local_dir)
 
-    def test_global(self, backend_cls: type[Backend], local_dir: str, global_suffix: str) -> None:
+    def test_global(
+        self, backend_cls: type[Backend], local_dir: str, global_suffix: str
+    ) -> None:
         backend = backend_cls()
         assert backend.get_skills_dir(Scope.GLOBAL) == Path.home() / global_suffix
 
@@ -98,7 +102,9 @@ class TestBackendInstallation:
         second = backend.install(skill)
         assert first == second
 
-    def test_install_replaces_different_symlink(self, setup: SetupFixture, tmp_path: Path) -> None:
+    def test_install_replaces_different_symlink(
+        self, setup: SetupFixture, tmp_path: Path
+    ) -> None:
         backend, skill, install_dir = setup
         install_dir.mkdir(parents=True, exist_ok=True)
         # Point at a real but different directory so .exists() returns True

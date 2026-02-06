@@ -21,14 +21,18 @@ class TestVersion:
 
 
 class TestList:
-    def test_list_no_skills(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    def test_list_no_skills(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         monkeypatch.chdir(tmp_path)
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
         result = runner.invoke(app, ["list"])
         assert result.exit_code == 0
         assert "no local skills found" in result.output.lower()
 
-    def test_list_local_only(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    def test_list_local_only(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         skill_dir = tmp_path / ".pixi/envs/default/share/agent-skills/test-skill"
         skill_dir.mkdir(parents=True)
         (skill_dir / "SKILL.md").write_text("---\ndescription: A test\n---\nBody\n")
@@ -39,7 +43,9 @@ class TestList:
         assert result.exit_code == 0
         assert "test-skill" in result.output
 
-    def test_list_global_scope(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    def test_list_global_scope(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         monkeypatch.chdir(tmp_path)
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
         result = runner.invoke(app, ["list", "--scope", "global"])
@@ -52,7 +58,9 @@ class TestList:
         result = runner.invoke(app, ["list", "--scope", "global", "--env", "custom"])
         assert result.exit_code == 1
 
-    def test_list_custom_env(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    def test_list_custom_env(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
         skill_dir = tmp_path / ".pixi/envs/myenv/share/agent-skills/env-skill"
         skill_dir.mkdir(parents=True)
         (skill_dir / "SKILL.md").write_text("---\ndescription: env\n---\nBody\n")
