@@ -2,33 +2,33 @@ import dataclasses
 import re
 import warnings
 from dataclasses import dataclass
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
 
 
-class Scope(str, Enum):
+class Scope(StrEnum):
     """Scope of a skill - local or global.
 
     Ordered by definition order (LOCAL < GLOBAL).
     """
 
-    def __lt__(self, other: Scope) -> bool:  # type: ignore[invalid-method-override, override]
+    def __lt__(self, other: "Scope") -> bool:  # type: ignore[invalid-method-override, override]
         if not isinstance(other, Scope):
             return NotImplemented
         members = list(Scope)
         return members.index(self) < members.index(other)
 
-    def __le__(self, other: Scope) -> bool:  # type: ignore[invalid-method-override, override]
+    def __le__(self, other: "Scope") -> bool:  # type: ignore[invalid-method-override, override]
         if not isinstance(other, Scope):
             return NotImplemented
         return self == other or self < other
 
-    def __gt__(self, other: Scope) -> bool:  # type: ignore[invalid-method-override, override]
+    def __gt__(self, other: "Scope") -> bool:  # type: ignore[invalid-method-override, override]
         if not isinstance(other, Scope):
             return NotImplemented
         return other < self
 
-    def __ge__(self, other: Scope) -> bool:  # type: ignore[invalid-method-override, override]
+    def __ge__(self, other: "Scope") -> bool:  # type: ignore[invalid-method-override, override]
         if not isinstance(other, Scope):
             return NotImplemented
         return self == other or self > other
@@ -50,7 +50,7 @@ class Skill:
     path: Path = dataclasses.field(compare=False)
 
     @classmethod
-    def from_directory(cls, path: Path, scope: Scope) -> Skill:
+    def from_directory(cls, path: Path, scope: Scope) -> "Skill":
         """Load a skill from a directory containing SKILL.md."""
         skill_md = path / "SKILL.md"
         if not skill_md.exists():

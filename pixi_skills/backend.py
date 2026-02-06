@@ -1,12 +1,12 @@
 import os
 from abc import ABC, abstractmethod
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
 
 from pixi_skills.skill import Scope, Skill
 
 
-class BackendName(str, Enum):
+class BackendName(StrEnum):
     """Available backend names."""
 
     CLAUDE = "claude"

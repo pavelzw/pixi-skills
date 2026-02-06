@@ -15,7 +15,7 @@ rich = ">=13"
 questionary = ">=2"
 
 [feature.test.dependencies]
-pytest = ">=6"
+pytest = "*"
 pytest-cov = "*"
 ty = "*"
 [feature.test.tasks]
