@@ -54,7 +54,7 @@ def select_skills_interactively(
         style=CUSTOM_STYLE,
         qmark="◆",
         pointer=">",
-        instruction="(↑↓ move, space select, a toggle all, enter confirm)",
+        instruction="(space select, enter confirm, ↑↓ move, a toggle all)",
     ).ask()
 
     return selected

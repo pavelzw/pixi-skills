@@ -67,13 +67,19 @@ class TestParseSkillMd:
         md = tmp_path / "SKILL.md"
         md.write_text("---\ndescription: |\n  line1\n  line2\n---\nBody\n")
         name, desc = parse_skill_md(md)
-        assert desc == ""
+        assert desc == "line1\nline2"
 
     def test_multiline_description_folded(self, tmp_path: Path) -> None:
         md = tmp_path / "SKILL.md"
         md.write_text("---\ndescription: >\n  line1\n  line2\n---\nBody\n")
         name, desc = parse_skill_md(md)
-        assert desc == ""
+        assert desc == "line1 line2"
+
+    def test_multiline_description_folded_strip(self, tmp_path: Path) -> None:
+        md = tmp_path / "SKILL.md"
+        md.write_text("---\ndescription: >-\n  line1\n  line2\n---\nBody\n")
+        name, desc = parse_skill_md(md)
+        assert desc == "line1 line2"
 
     def test_missing_frontmatter(self, tmp_path: Path) -> None:
         md = tmp_path / "SKILL.md"
