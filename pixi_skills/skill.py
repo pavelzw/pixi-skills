@@ -5,6 +5,8 @@ from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
 
+import yaml
+
 
 class Scope(StrEnum):
     """Scope of a skill - local or global.
@@ -81,32 +83,19 @@ def parse_skill_md(skill_md: Path) -> tuple[str | None, str]:
 
     frontmatter = content[3 : 3 + end_match.start()]
 
-    # Simple YAML parsing for name and description
-    name = None
-    description = None
+    data = yaml.safe_load(frontmatter)
+    if not isinstance(data, dict):
+        raise ValueError(f"Invalid YAML frontmatter in {skill_md}")
 
-    for line in frontmatter.split("\n"):
-        line = line.strip()
-        if line.startswith("name:"):
-            name = line[5:].strip().strip("\"'")
-        elif line.startswith("description:"):
-            # Handle multiline or quoted descriptions
-            desc_value = line[12:].strip()
-            if desc_value.startswith('"'):
-                # Quoted description
-                description = desc_value.strip('"')
-            elif desc_value.startswith("'"):
-                description = desc_value.strip("'")
-            elif desc_value.startswith("|") or desc_value.startswith(">"):
-                # Multiline - for now just use the directory name
-                description = ""
-            else:
-                description = desc_value
+    name = data.get("name")
+    if name is not None:
+        name = str(name)
 
+    description = data.get("description")
     if description is None:
         raise ValueError(f"Missing 'description' in SKILL.md frontmatter: {skill_md}")
 
-    return name, description
+    return name, str(description)
 
 
 def discover_local_skills(env: str) -> list[Skill]:

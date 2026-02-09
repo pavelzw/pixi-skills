@@ -13,6 +13,7 @@ hatchling = "*"
 typer = ">=0.12"
 rich = ">=13"
 questionary = ">=2"
+pyyaml = ">=6"
 
 [feature.test.dependencies]
 pytest = "*"

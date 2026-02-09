@@ -14,7 +14,7 @@ classifiers = [
 ]
 requires-python = ">=3.13"
 readme = "README.md"
-dependencies = ["typer>=0.12", "rich>=13", "questionary>=2"]
+dependencies = ["typer>=0.12", "rich>=13", "questionary>=2", "pyyaml >=6"]
 
 [project.urls]
 repository = "https://github.com/pavelzw/pixi-skills"
