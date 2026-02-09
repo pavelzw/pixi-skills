@@ -43,7 +43,7 @@ def select_skills_interactively(
         questionary.Choice(
             title=f"{skill.name} ({skill.description})",
             value=skill,
-            checked=skill.name in installed,
+            checked=(not installed) or (skill.name in installed),
         )
         for skill in sorted_skills
     ]
