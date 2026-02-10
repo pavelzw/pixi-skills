@@ -13,6 +13,7 @@ from pixi_skills.backend import (
     CursorBackend,
     GeminiBackend,
     OpencodeBackend,
+    WindsurfBackend,
     get_all_backends,
     get_backend,
 )
@@ -51,6 +52,7 @@ class TestBackendRegistry:
         (CopilotBackend, ".github/skills", ".github/skills"),
         (GeminiBackend, ".gemini/skills", ".gemini/skills"),
         (OpencodeBackend, ".opencode/skills", ".opencode/skills"),
+        (WindsurfBackend, ".windsurf/skills", ".codeium/windsurf/skills"),
     ],
 )
 class TestGetSkillsDir:
