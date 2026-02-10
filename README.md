@@ -5,10 +5,13 @@
 [![pypi-version](https://img.shields.io/pypi/v/pixi-skills.svg?logo=pypi&logoColor=white&style=flat-square)](https://pypi.org/project/pixi-skills)
 [![python-version](https://img.shields.io/pypi/pyversions/pixi-skills?logoColor=white&logo=python&style=flat-square)](https://pypi.org/project/pixi-skills)
 [![conda-forge](https://img.shields.io/badge/prefix.dev%2Fskill--forge-F7CC49?style=flat-square)](https://prefix.dev/channels/skill-forge)
+[![pixi-skills](https://img.shields.io/badge/pavelzw%2Fskill--forge-181717?style=flat-square&logo=github)](https://github.com/pavelzw/skill-forge)
 
 Manage and install coding agent skills across multiple LLM backends using [pixi](https://pixi.sh).
 
 pixi-skills discovers skills packaged in pixi environments and lets you install them into the configuration directories of various coding agents via symlinks.
+
+For more background on why distributing agent skills through package managers makes sense, check out the blog post [Managing Agent Skills with Your Package Manager](https://pavel.pink/blog/pixi-skills).
 
 ## Installation
 
