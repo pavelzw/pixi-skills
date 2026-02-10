@@ -16,6 +16,7 @@ class BackendName(StrEnum):
     CURSOR = "cursor"
     GEMINI = "gemini"
     OPENCODE = "opencode"
+    WINDSURF = "windsurf"
 
 
 class Backend(ABC):
@@ -170,6 +171,18 @@ class OpencodeBackend(Backend):
             return Path.home() / ".opencode/skills"
 
 
+class WindsurfBackend(Backend):
+    """Backend for Windsurf."""
+
+    name = "windsurf"
+
+    def get_skills_dir(self, scope: Scope) -> Path:
+        if scope == Scope.LOCAL:
+            return Path(".windsurf/skills")
+        else:
+            return Path.home() / ".codeium/windsurf/skills"
+
+
 # Registry of available backends
 BACKENDS: dict[BackendName, type[Backend]] = {
     BackendName.CLAUDE: ClaudeBackend,
@@ -179,6 +192,7 @@ BACKENDS: dict[BackendName, type[Backend]] = {
     BackendName.CURSOR: CursorBackend,
     BackendName.GEMINI: GeminiBackend,
     BackendName.OPENCODE: OpencodeBackend,
+    BackendName.WINDSURF: WindsurfBackend,
 }
 
 

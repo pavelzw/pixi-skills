@@ -58,6 +58,7 @@ A collection of ready-to-use skills is available at [skill-forge](https://prefix
 | Cursor | `.cursor/skills/` | `~/.cursor/skills/` |
 | Gemini | `.gemini/skills/` | `~/.gemini/skills/` |
 | Opencode | `.opencode/skills/` | `~/.opencode/skills/` |
+| Windsurf | `.windsurf/skills/` | `~/.codeium/windsurf/skills/` |
 
 Skills are installed as relative symlinks for portability.
 
