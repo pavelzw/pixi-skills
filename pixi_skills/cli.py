@@ -1,3 +1,4 @@
+import subprocess
 from importlib.metadata import version
 from typing import Annotated
 
@@ -10,6 +11,7 @@ from pixi_skills.backend import BackendName, get_all_backends, get_backend
 from pixi_skills.selector import CUSTOM_STYLE, select_skills_interactively
 from pixi_skills.skill import (
     Scope,
+    discover_global_skill_packages,
     discover_global_skills,
     discover_local_skills,
 )
@@ -262,6 +264,204 @@ def status(
                 console.print(table)
             else:
                 console.print(f"  [dim]No {scope.value} skills installed[/dim]")
+
+
+@app.command("install")
+def install_skill(
+    skill_name: Annotated[
+        str,
+        typer.Argument(help="Name of the skill to install."),
+    ],
+    local: Annotated[
+        bool,
+        typer.Option(
+            "--local",
+            "-l",
+            help="Install locally into the current project instead of globally.",
+        ),
+    ] = False,
+    backend: Annotated[
+        BackendName | None,
+        typer.Option(
+            "--backend",
+            "-b",
+            help="Backend to link the skill for.",
+        ),
+    ] = None,
+    channel: Annotated[
+        str,
+        typer.Option(
+            "--channel",
+            "-c",
+            help="Channel to install the skill from.",
+        ),
+    ] = "https://prefix.dev/skill-forge",
+) -> None:
+    """Install a skill and link it for the selected backend.
+
+    By default, installs the skill globally using pixi global install.
+    Use --local to add it as a dependency to the current project instead.
+    """
+    package_name = f"agent-skill-{skill_name}"
+
+    if local:
+        console.print(
+            f"[cyan]Adding {package_name} from {channel} to the current project...[/cyan]"
+        )
+        result = subprocess.run(
+            ["pixi", "add", "--channel", channel, package_name],
+            capture_output=True,
+            text=True,
+        )
+    else:
+        console.print(
+            f"[cyan]Installing {package_name} globally from {channel}...[/cyan]"
+        )
+        result = subprocess.run(
+            ["pixi", "global", "install", "-c", channel, package_name],
+            capture_output=True,
+            text=True,
+        )
+
+    if result.returncode != 0:
+        console.print(f"[red]Failed to install {package_name}:[/red]")
+        if result.stderr:
+            console.print(f"[red]{result.stderr.strip()}[/red]")
+        raise typer.Exit(1)
+
+    console.print(f"[green]Successfully installed {package_name}[/green]")
+
+    # Discover the newly installed skill and link it
+    if local:
+        skills = discover_local_skills("default")
+    else:
+        skills = discover_global_skills()
+
+    matching = [s for s in skills if s.name == skill_name]
+    if not matching:
+        console.print(
+            f"[yellow]Skill installed but could not find '{skill_name}' "
+            f"in discovered skills to link.[/yellow]"
+        )
+        raise typer.Exit(0)
+
+    skill = matching[0]
+
+    # Prompt for backend if not specified
+    if backend is None:
+        backend = _prompt_for_backend()
+
+    backend_instance = get_backend(backend)
+    try:
+        symlink_path = backend_instance.install(skill)
+        console.print(
+            f"[green]Linked '{skill_name}' for {backend.value} at {symlink_path}[/green]"
+        )
+    except ValueError as e:
+        console.print(f"[red]Failed to link '{skill_name}': {e}[/red]")
+        raise typer.Exit(1)
+
+
+@app.command("update")
+def update_skill(
+    skill_name: Annotated[
+        str | None,
+        typer.Argument(help="Name of the skill to update. If omitted, updates all."),
+    ] = None,
+    local: Annotated[
+        bool,
+        typer.Option(
+            "--local",
+            "-l",
+            help="Update locally installed skills instead of global ones.",
+        ),
+    ] = False,
+) -> None:
+    """Update installed skills to their latest versions.
+
+    By default, updates globally installed skills using pixi global upgrade.
+    Use --local to update local project dependencies instead.
+    """
+    if local:
+        if skill_name:
+            console.print(
+                f"[cyan]Updating agent-skill-{skill_name} in the current project...[/cyan]"
+            )
+            result = subprocess.run(
+                ["pixi", "update", f"agent-skill-{skill_name}"],
+                capture_output=True,
+                text=True,
+            )
+        else:
+            console.print(
+                "[cyan]Updating all packages in the current project...[/cyan]"
+            )
+            result = subprocess.run(
+                ["pixi", "update"],
+                capture_output=True,
+                text=True,
+            )
+    else:
+        if skill_name:
+            packages = [f"agent-skill-{skill_name}"]
+        else:
+            packages = discover_global_skill_packages()
+            if not packages:
+                console.print(
+                    "[yellow]No global agent skills found to update.[/yellow]"
+                )
+                return
+
+        failed = False
+        for package_name in packages:
+            console.print(f"[cyan]Upgrading {package_name} globally...[/cyan]")
+            result = subprocess.run(
+                ["pixi", "global", "upgrade", package_name],
+                capture_output=True,
+                text=True,
+            )
+            if result.returncode != 0:
+                console.print(f"[red]Failed to upgrade {package_name}:[/red]")
+                if result.stderr:
+                    console.print(f"[red]{result.stderr.strip()}[/red]")
+                failed = True
+            else:
+                console.print(f"[green]Upgraded {package_name}[/green]")
+
+        if failed:
+            raise typer.Exit(1)
+
+    console.print("[green]Update complete.[/green]")
+
+    # Re-link updated skills so symlinks point to the (possibly new) paths
+    if local:
+        skills = discover_local_skills("default")
+    else:
+        skills = discover_global_skills()
+
+    # If a specific skill was requested, only re-link that one
+    if skill_name:
+        skills = [s for s in skills if s.name == skill_name]
+
+    if not skills:
+        return
+
+    scope = Scope.LOCAL if local else Scope.GLOBAL
+    for backend_instance in get_all_backends():
+        installed = {name for name, _ in backend_instance.get_installed_skills(scope)}
+        for skill in skills:
+            if skill.name in installed:
+                try:
+                    symlink_path = backend_instance.install(skill)
+                    console.print(
+                        f"[green]Re-linked '{skill.name}' for "
+                        f"{backend_instance.name} at {symlink_path}[/green]"
+                    )
+                except ValueError as e:
+                    console.print(
+                        f"[red]Failed to re-link '{skill.name}' for "
+                        f"{backend_instance.name}: {e}[/red]"
+                    )
 
 
 if __name__ == "__main__":
