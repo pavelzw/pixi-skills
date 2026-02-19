@@ -1,7 +1,7 @@
 from pathlib import Path
-from unittest.mock import patch
 
 import pytest
+from pytest_mock import MockerFixture
 from typer.testing import CliRunner
 
 from pixi_skills.cli import app
@@ -161,7 +161,10 @@ class TestInstall:
         return skill_dir
 
     def test_install_global(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        mocker: MockerFixture,
     ) -> None:
         monkeypatch.chdir(tmp_path)
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
@@ -169,13 +172,13 @@ class TestInstall:
         # Pre-create the skill so discovery works after the mocked install
         self._make_global_skill(tmp_path, "my-tool")
 
-        with patch("pixi_skills.cli.subprocess.run") as mock_run:
-            mock_run.return_value.returncode = 0
-            mock_run.return_value.stderr = ""
+        mock_run = mocker.patch("pixi_skills.cli.subprocess.run")
+        mock_run.return_value.returncode = 0
+        mock_run.return_value.stderr = ""
 
-            result = runner.invoke(
-                app, ["install", "my-tool", "--scope", "global", "--backend", "claude"]
-            )
+        result = runner.invoke(
+            app, ["install", "my-tool", "--scope", "global", "--backend", "claude"]
+        )
 
         assert result.exit_code == 0
         assert "Successfully installed" in result.output
@@ -192,20 +195,23 @@ class TestInstall:
         assert symlink.is_symlink()
 
     def test_install_local(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        mocker: MockerFixture,
     ) -> None:
         monkeypatch.chdir(tmp_path)
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
 
         self._make_local_skill(tmp_path, "my-tool")
 
-        with patch("pixi_skills.cli.subprocess.run") as mock_run:
-            mock_run.return_value.returncode = 0
-            mock_run.return_value.stderr = ""
+        mock_run = mocker.patch("pixi_skills.cli.subprocess.run")
+        mock_run.return_value.returncode = 0
+        mock_run.return_value.stderr = ""
 
-            result = runner.invoke(
-                app, ["install", "my-tool", "--scope", "local", "--backend", "claude"]
-            )
+        result = runner.invoke(
+            app, ["install", "my-tool", "--scope", "local", "--backend", "claude"]
+        )
 
         assert result.exit_code == 0
         assert "Successfully installed" in result.output
@@ -218,49 +224,105 @@ class TestInstall:
         symlink = tmp_path / ".claude/skills/my-tool"
         assert symlink.is_symlink()
 
-    def test_install_pixi_failure(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    def test_install_local_custom_env(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        mocker: MockerFixture,
     ) -> None:
         monkeypatch.chdir(tmp_path)
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
 
-        with patch("pixi_skills.cli.subprocess.run") as mock_run:
-            mock_run.return_value.returncode = 1
-            mock_run.return_value.stderr = "package not found"
+        self._make_local_skill(tmp_path, "my-tool", env="myenv")
 
-            result = runner.invoke(
-                app,
-                ["install", "nonexistent", "--scope", "global", "--backend", "claude"],
-            )
+        mock_run = mocker.patch("pixi_skills.cli.subprocess.run")
+        mock_run.return_value.returncode = 0
+        mock_run.return_value.stderr = ""
+
+        result = runner.invoke(
+            app,
+            [
+                "install",
+                "my-tool",
+                "--env",
+                "myenv",
+                "--backend",
+                "claude",
+            ],
+        )
+
+        assert result.exit_code == 0
+        assert "Successfully installed" in result.output
+        assert "Linked" in result.output
+
+    def test_install_env_with_global_scope_fails(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        monkeypatch.chdir(tmp_path)
+        result = runner.invoke(
+            app,
+            [
+                "install",
+                "my-tool",
+                "--scope",
+                "global",
+                "--env",
+                "custom",
+                "--backend",
+                "claude",
+            ],
+        )
+        assert result.exit_code == 1
+
+    def test_install_pixi_failure(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        mocker: MockerFixture,
+    ) -> None:
+        monkeypatch.chdir(tmp_path)
+        monkeypatch.setattr(Path, "home", lambda: tmp_path)
+
+        mock_run = mocker.patch("pixi_skills.cli.subprocess.run")
+        mock_run.return_value.returncode = 1
+        mock_run.return_value.stderr = "package not found"
+
+        result = runner.invoke(
+            app,
+            ["install", "nonexistent", "--scope", "global", "--backend", "claude"],
+        )
 
         assert result.exit_code == 1
         assert "Failed to install" in result.output
 
     def test_install_custom_channel(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        mocker: MockerFixture,
     ) -> None:
         monkeypatch.chdir(tmp_path)
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
 
         self._make_global_skill(tmp_path, "my-tool")
 
-        with patch("pixi_skills.cli.subprocess.run") as mock_run:
-            mock_run.return_value.returncode = 0
-            mock_run.return_value.stderr = ""
+        mock_run = mocker.patch("pixi_skills.cli.subprocess.run")
+        mock_run.return_value.returncode = 0
+        mock_run.return_value.stderr = ""
 
-            result = runner.invoke(
-                app,
-                [
-                    "install",
-                    "my-tool",
-                    "--scope",
-                    "global",
-                    "--backend",
-                    "claude",
-                    "--channel",
-                    "https://example.com/channel",
-                ],
-            )
+        result = runner.invoke(
+            app,
+            [
+                "install",
+                "my-tool",
+                "--scope",
+                "global",
+                "--backend",
+                "claude",
+                "--channel",
+                "https://example.com/channel",
+            ],
+        )
 
         assert result.exit_code == 0
         call_args = mock_run.call_args[0][0]
@@ -268,161 +330,56 @@ class TestInstall:
 
 
 class TestUpdate:
-    def test_update_global_single(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    def test_update_global(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        mocker: MockerFixture,
     ) -> None:
         monkeypatch.chdir(tmp_path)
 
-        with patch("pixi_skills.cli.subprocess.run") as mock_run:
-            mock_run.return_value.returncode = 0
-            mock_run.return_value.stderr = ""
+        mock_run = mocker.patch("pixi_skills.cli.subprocess.run")
+        mock_run.return_value.returncode = 0
+        mock_run.return_value.stderr = ""
 
-            result = runner.invoke(app, ["update", "my-tool", "--scope", "global"])
+        result = runner.invoke(app, ["update", "my-tool", "--scope", "global"])
 
         assert result.exit_code == 0
-        assert "Update complete" in result.output
+        assert "Successfully updated" in result.output
         call_args = mock_run.call_args[0][0]
         assert call_args == ["pixi", "global", "upgrade", "agent-skill-my-tool"]
 
-    def test_update_global_all(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
-        monkeypatch.chdir(tmp_path)
-        monkeypatch.setattr(Path, "home", lambda: tmp_path)
-
-        # Create two global skill envs
-        for name in ("agent-skill-foo", "agent-skill-bar"):
-            (tmp_path / f".pixi/envs/{name}").mkdir(parents=True)
-
-        with patch("pixi_skills.cli.subprocess.run") as mock_run:
-            mock_run.return_value.returncode = 0
-            mock_run.return_value.stderr = ""
-
-            result = runner.invoke(app, ["update", "--scope", "global"])
-
-        assert result.exit_code == 0
-        # Should call pixi global upgrade for each agent-skill-* package
-        assert mock_run.call_count == 2
-        upgraded = {tuple(c[0][0]) for c in mock_run.call_args_list}
-        assert ("pixi", "global", "upgrade", "agent-skill-foo") in upgraded
-        assert ("pixi", "global", "upgrade", "agent-skill-bar") in upgraded
-
-    def test_update_global_all_no_skills(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
-        monkeypatch.chdir(tmp_path)
-        monkeypatch.setattr(Path, "home", lambda: tmp_path)
-
-        result = runner.invoke(app, ["update", "--scope", "global"])
-
-        assert result.exit_code == 0
-        assert "No global agent skills found" in result.output
-
-    def test_update_local_single(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    def test_update_local(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        mocker: MockerFixture,
     ) -> None:
         monkeypatch.chdir(tmp_path)
 
-        with patch("pixi_skills.cli.subprocess.run") as mock_run:
-            mock_run.return_value.returncode = 0
-            mock_run.return_value.stderr = ""
+        mock_run = mocker.patch("pixi_skills.cli.subprocess.run")
+        mock_run.return_value.returncode = 0
+        mock_run.return_value.stderr = ""
 
-            result = runner.invoke(app, ["update", "my-tool", "--scope", "local"])
+        result = runner.invoke(app, ["update", "my-tool", "--scope", "local"])
 
         assert result.exit_code == 0
         call_args = mock_run.call_args[0][0]
         assert call_args == ["pixi", "update", "agent-skill-my-tool"]
 
-    def test_update_local_all(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
-        monkeypatch.chdir(tmp_path)
-
-        with patch("pixi_skills.cli.subprocess.run") as mock_run:
-            mock_run.return_value.returncode = 0
-            mock_run.return_value.stderr = ""
-
-            result = runner.invoke(app, ["update", "--scope", "local"])
-
-        assert result.exit_code == 0
-        call_args = mock_run.call_args[0][0]
-        assert call_args == ["pixi", "update"]
-
-    def test_update_relinks_installed_skill(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
-        monkeypatch.chdir(tmp_path)
-        monkeypatch.setattr(Path, "home", lambda: tmp_path)
-
-        # Create a global skill and a pre-existing symlink for claude backend
-        skill_dir = (
-            tmp_path / ".pixi/envs/agent-skill-my-tool/share/agent-skills/my-tool"
-        )
-        skill_dir.mkdir(parents=True)
-        (skill_dir / "SKILL.md").write_text("---\ndescription: A tool\n---\nBody\n")
-
-        claude_dir = tmp_path / ".claude/skills"
-        claude_dir.mkdir(parents=True)
-        # Create an old symlink pointing somewhere else
-        old_target = tmp_path / "old-location"
-        old_target.mkdir()
-        (claude_dir / "my-tool").symlink_to(old_target)
-
-        with patch("pixi_skills.cli.subprocess.run") as mock_run:
-            mock_run.return_value.returncode = 0
-            mock_run.return_value.stderr = ""
-
-            result = runner.invoke(app, ["update", "my-tool", "--scope", "global"])
-
-        assert result.exit_code == 0
-        assert "Re-linked" in result.output
-        # Symlink should now point to the discovered skill path
-        assert (claude_dir / "my-tool").resolve() == skill_dir.resolve()
-
-    def test_update_relinks_all_skills(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-    ) -> None:
-        monkeypatch.chdir(tmp_path)
-        monkeypatch.setattr(Path, "home", lambda: tmp_path)
-
-        # Create two global skills
-        for name in ("tool-a", "tool-b"):
-            skill_dir = (
-                tmp_path / f".pixi/envs/agent-skill-{name}/share/agent-skills/{name}"
-            )
-            skill_dir.mkdir(parents=True)
-            (skill_dir / "SKILL.md").write_text(
-                f"---\ndescription: {name}\n---\nBody\n"
-            )
-
-        # Only tool-a is installed in claude backend
-        claude_dir = tmp_path / ".claude/skills"
-        claude_dir.mkdir(parents=True)
-        old_target = tmp_path / "old"
-        old_target.mkdir()
-        (claude_dir / "tool-a").symlink_to(old_target)
-
-        with patch("pixi_skills.cli.subprocess.run") as mock_run:
-            mock_run.return_value.returncode = 0
-            mock_run.return_value.stderr = ""
-
-            result = runner.invoke(app, ["update", "--scope", "global"])
-
-        assert result.exit_code == 0
-        # tool-a should be re-linked, tool-b should not be re-linked
-        assert "Re-linked 'tool-a'" in result.output
-        assert "Re-linked 'tool-b'" not in result.output
-
     def test_update_failure(
-        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        mocker: MockerFixture,
     ) -> None:
         monkeypatch.chdir(tmp_path)
 
-        with patch("pixi_skills.cli.subprocess.run") as mock_run:
-            mock_run.return_value.returncode = 1
-            mock_run.return_value.stderr = "something went wrong"
+        mock_run = mocker.patch("pixi_skills.cli.subprocess.run")
+        mock_run.return_value.returncode = 1
+        mock_run.return_value.stderr = "something went wrong"
 
-            result = runner.invoke(app, ["update", "bad-skill", "--scope", "global"])
+        result = runner.invoke(app, ["update", "bad-skill", "--scope", "global"])
 
         assert result.exit_code == 1
-        assert "Failed to upgrade" in result.output
+        assert "Failed to update" in result.output

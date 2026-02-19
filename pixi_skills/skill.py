@@ -137,15 +137,3 @@ def discover_global_skills() -> list[Skill]:
                 except ValueError as e:
                     warnings.warn(f"Skipping invalid skill at {skill_dir}: {e}")
     return skills
-
-
-def discover_global_skill_packages() -> list[str]:
-    """Discover globally installed agent-skill-* package names."""
-    global_pixi = _global_envs_dir()
-    if not global_pixi.exists():
-        return []
-    return [
-        p.name
-        for p in global_pixi.iterdir()
-        if p.is_dir() and p.name.startswith("agent-skill-")
-    ]
