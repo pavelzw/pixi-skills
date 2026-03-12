@@ -41,7 +41,6 @@ check-wheel = "twine check dist/*"
 
 [feature.lint.dependencies]
 lefthook = "*"
-docformatter = "*"
 ruff = "*"
 taplo = "*"
 pre-commit-hooks = "*"

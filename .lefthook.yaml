@@ -13,9 +13,6 @@ pre-commit:
     - group:
         parallel: true
         jobs:
-          - name: docformatter
-            glob: "*.py"
-            run: pixi {run} docformatter -i {staged_files}
           - name: ruff-check
             glob: "*.{py,pyi}"
             run: pixi {run} ruff check --fix --exit-non-zero-on-fix --force-exclude
@@ -25,9 +22,6 @@ pre-commit:
           - name: mypy
             glob: "*.py"
             run: pixi {run} mypy {staged_files}
-          - name: prettier
-            glob: "*.{md,yml,yaml}"
-            run: pixi {run} prettier --write --no-error-on-unmatched-pattern --list-different --ignore-unknown {staged_files}
           - name: taplo
             glob: "*.toml"
             run: pixi {run} taplo format {staged_files}
