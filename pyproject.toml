@@ -6,7 +6,6 @@ build-backend = "hatchling.build"
 name = "pixi-skills"
 description = "Manage coding agent skills using pixi"
 # replaced in CI
-version = "0.0.0"
 authors = [{ name = "Pavel Zwerschke", email = "pavelzw@gmail.com" }]
 # replaced in CI
 version = "0.0.0"
