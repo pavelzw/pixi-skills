@@ -19,9 +19,9 @@ pre-commit:
           - name: ruff-format
             glob: "*.{py,pyi}"
             run: pixi {run} ruff format --force-exclude
-          - name: mypy
+          - name: ty
             glob: "*.py"
-            run: pixi {run} mypy {staged_files}
+            run: pixi {run} ty check {staged_files}
           - name: taplo
             glob: "*.toml"
             run: pixi {run} taplo format {staged_files}
