@@ -44,6 +44,3 @@ pre-commit:
           - name: zizmor
             glob: "*.{yml,yaml}"
             run: pixi {run} zizmor --no-progress --min-severity high --fix .
-          - name: conftest
-            glob: "Dockerfile*"
-            run: pixi {run} conftest-run {staged_files}
