@@ -1,12 +1,5 @@
-## Package management
+Lockfiles must be consistent with package metadata. After any change to `pixi.toml`, run `pixi lock`.
 
-This repository is using the pixi package manager. The full documentation for pixi can be found at https://pixi.prefix.dev/latest/llms-full.txt or with `pixi --help`.
-If you change `pixi.toml`, please run `pixi lock` afterwards.
+Everything runs in a pixi environment. Any command (like `pytest`) must be prefixed with `pixi run` (e.g. `pixi run pytest`).
 
-In case you want to run any commands (like `pytest`), prepend them with `pixi run`.
-
-## Code Standards
-
-### Required Before Each Commit
-
-- To ensure that our code-formatting is in line with the standards we follow, run `pixi run pre-commit-run` before committing any changes.
+Code formatting must align with our standards. Run `pixi run lint` before `git commit`s to ensure this.

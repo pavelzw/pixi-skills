@@ -14,7 +14,8 @@ permissions:
   contents: read
 
 jobs:
-  pre-commit:
+  lint:
+    name: Lint
     timeout-minutes: 30
     runs-on: ubuntu-latest
     steps:
@@ -22,10 +23,10 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Set up pixi
         uses: prefix-dev/setup-pixi@a0af7a228712d6121d37aba47adf55c1332c9c2e # v0.9.4
-        with:
-          environments: default lint
-      - name: pre-commit
-        run: pixi run pre-commit-run --color=always --show-diff-on-failure
+      - name: Run linting
+        run: pixi run lint
+        env:
+          CLICOLOR_FORCE: 1
 
   pytest:
     timeout-minutes: 30
@@ -35,6 +36,7 @@ jobs:
       matrix:
         environment:
           - py313
+          - py314
         os:
           - ubuntu-latest
           - macos-latest
@@ -48,7 +50,5 @@ jobs:
         uses: prefix-dev/setup-pixi@a0af7a228712d6121d37aba47adf55c1332c9c2e # v0.9.4
         with:
           environments: ${{ matrix.environment }}
-      - name: Install repository
-        run: pixi run -e ${{ matrix.environment }} postinstall
       - name: Run pytest
         run: pixi run -e ${{ matrix.environment }} test-coverage --color=yes
