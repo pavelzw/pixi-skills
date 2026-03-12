@@ -1,4 +1,5 @@
 import dataclasses
+import os
 import re
 import warnings
 from dataclasses import dataclass
@@ -116,10 +117,18 @@ def discover_local_skills(env: str) -> list[Skill]:
     return skills
 
 
+def _global_envs_dir() -> Path:
+    """Return the global pixi envs directory, respecting PIXI_HOME."""
+    pixi_home = os.environ.get("PIXI_HOME")
+    if pixi_home:
+        return Path(pixi_home) / "envs"
+    return Path.home() / ".pixi/envs"
+
+
 def discover_global_skills() -> list[Skill]:
-    """Discover global skills from ~/.pixi/envs/agent-skill-*/share/agent-skills/*."""
+    """Discover global skills from the global pixi envs directory."""
     skills = []
-    global_pixi = Path.home() / ".pixi/envs"
+    global_pixi = _global_envs_dir()
     if global_pixi.exists():
         for skill_dir in global_pixi.glob("agent-skill-*/share/agent-skills/*"):
             if skill_dir.is_dir() and (skill_dir / "SKILL.md").exists():
