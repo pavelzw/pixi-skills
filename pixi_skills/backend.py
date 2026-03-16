@@ -10,12 +10,18 @@ class BackendName(StrEnum):
     """Available backend names."""
 
     CLAUDE = "claude"
+    CLINE = "cline"
     CODEX = "codex"
     COPILOT = "copilot"
     CRUSH = "crush"
     CURSOR = "cursor"
     GEMINI = "gemini"
+    KIRO = "kiro"
+    KILOCODE = "kilocode"
     OPENCODE = "opencode"
+    QODER = "qoder"
+    ROOCODE = "roocode"
+    TRAE = "trae"
     WINDSURF = "windsurf"
 
 
@@ -97,6 +103,18 @@ class ClaudeBackend(Backend):
             return Path(".claude/skills")
         else:
             return Path.home() / ".claude/skills"
+
+
+class ClineBackend(Backend):
+    """Backend for Cline."""
+
+    name = "cline"
+
+    def get_skills_dir(self, scope: Scope) -> Path:
+        if scope == Scope.LOCAL:
+            return Path(".agents/skills")
+        else:
+            return Path.home() / ".agents/skills"
 
 
 class CrushBackend(Backend):
@@ -183,15 +201,81 @@ class WindsurfBackend(Backend):
             return Path.home() / ".codeium/windsurf/skills"
 
 
+class KiroBackend(Backend):
+    """Backend for Kiro."""
+
+    name = "kiro"
+
+    def get_skills_dir(self, scope: Scope) -> Path:
+        if scope == Scope.LOCAL:
+            return Path(".kiro/skills")
+        else:
+            return Path.home() / ".kiro/skills"
+
+
+class KiloCodeBackend(Backend):
+    """Backend for Kilo Code."""
+
+    name = "kilocode"
+
+    def get_skills_dir(self, scope: Scope) -> Path:
+        if scope == Scope.LOCAL:
+            return Path(".kilocode/skills")
+        else:
+            return Path.home() / ".kilocode/skills"
+
+
+class TraeBackend(Backend):
+    """Backend for Trae."""
+
+    name = "trae"
+
+    def get_skills_dir(self, scope: Scope) -> Path:
+        if scope == Scope.LOCAL:
+            return Path(".trae/skills")
+        else:
+            return Path.home() / ".trae/skills"
+
+
+class QoderBackend(Backend):
+    """Backend for Qoder."""
+
+    name = "qoder"
+
+    def get_skills_dir(self, scope: Scope) -> Path:
+        if scope == Scope.LOCAL:
+            return Path(".qoder/skills")
+        else:
+            return Path.home() / ".qoder/skills"
+
+
+class RooCodeBackend(Backend):
+    """Backend for Roo Code."""
+
+    name = "roocode"
+
+    def get_skills_dir(self, scope: Scope) -> Path:
+        if scope == Scope.LOCAL:
+            return Path(".roo/skills")
+        else:
+            return Path.home() / ".roo/skills"
+
+
 # Registry of available backends
 BACKENDS: dict[BackendName, type[Backend]] = {
     BackendName.CLAUDE: ClaudeBackend,
+    BackendName.CLINE: ClineBackend,
     BackendName.CODEX: CodexBackend,
     BackendName.COPILOT: CopilotBackend,
     BackendName.CRUSH: CrushBackend,
     BackendName.CURSOR: CursorBackend,
     BackendName.GEMINI: GeminiBackend,
+    BackendName.KIRO: KiroBackend,
+    BackendName.KILOCODE: KiloCodeBackend,
     BackendName.OPENCODE: OpencodeBackend,
+    BackendName.QODER: QoderBackend,
+    BackendName.ROOCODE: RooCodeBackend,
+    BackendName.TRAE: TraeBackend,
     BackendName.WINDSURF: WindsurfBackend,
 }
 

@@ -210,6 +210,10 @@ class TestDiscoverLocalSkills:
 
 
 class TestDiscoverGlobalSkills:
+    @pytest.fixture(autouse=True)
+    def _clear_pixi_home(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.delenv("PIXI_HOME", raising=False)
+
     def test_discovers_skills(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:

@@ -52,12 +52,18 @@ A collection of ready-to-use skills is available at [skill-forge](https://prefix
 | Backend | Local directory | Global directory |
 |---------|----------------|-----------------|
 | Claude | `.claude/skills/` | `~/.claude/skills/` |
+| Cline | `.agents/skills/` | `~/.agents/skills/` |
 | Codex | `.codex/skills/` | `~/.codex/skills/` |
 | Copilot | `.github/skills/` | `~/.github/skills/` |
 | Crush | `.crush/skills/` | `~/.crush/skills/` |
 | Cursor | `.cursor/skills/` | `~/.cursor/skills/` |
 | Gemini | `.gemini/skills/` | `~/.gemini/skills/` |
+| Kilo Code | `.kilocode/skills/` | `~/.kilocode/skills/` |
+| Kiro | `.kiro/skills/` | `~/.kiro/skills/` |
 | Opencode | `.opencode/skills/` | `~/.opencode/skills/` |
+| Qoder | `.qoder/skills/` | `~/.qoder/skills/` |
+| Roo Code | `.roo/skills/` | `~/.roo/skills/` |
+| Trae | `.trae/skills/` | `~/.trae/skills/` |
 | Windsurf | `.windsurf/skills/` | `~/.codeium/windsurf/skills/` |
 
 Skills are installed as relative symlinks for portability.
