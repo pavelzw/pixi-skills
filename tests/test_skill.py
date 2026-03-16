@@ -210,6 +210,10 @@ class TestDiscoverLocalSkills:
 
 
 class TestDiscoverGlobalSkills:
+    @pytest.fixture(autouse=True)
+    def _clear_pixi_home(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.delenv("PIXI_HOME", raising=False)
+
     def test_discovers_skills(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
@@ -239,3 +243,16 @@ class TestDiscoverGlobalSkills:
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
 
         assert discover_global_skills() == []
+
+    def test_respects_pixi_home(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        pixi_home = tmp_path / "custom-pixi"
+        skill_dir = pixi_home / "envs/agent-skill-foo/share/agent-skills/foo"
+        skill_dir.mkdir(parents=True)
+        (skill_dir / "SKILL.md").write_text("---\ndescription: foo\n---\n")
+        monkeypatch.setenv("PIXI_HOME", str(pixi_home))
+
+        skills = discover_global_skills()
+        assert len(skills) == 1
+        assert skills[0].name == "foo"
