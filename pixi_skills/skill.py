@@ -71,7 +71,7 @@ def parse_skill_md(skill_md: Path) -> tuple[str | None, str]:
 
     Name is optional and can be derived from the directory name.
     """
-    content = skill_md.read_text()
+    content = skill_md.read_text(encoding="utf-8")
 
     # Check for YAML frontmatter
     if not content.startswith("---"):
