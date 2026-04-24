@@ -9,7 +9,10 @@ CUSTOM_STYLE = Style(
         ("qmark", "fg:ansimagenta bold"),  # Diamond question mark
         ("question", "bold"),  # Question text
         ("pointer", "fg:ansimagenta bold"),  # Pointer arrow
-        ("highlighted", "noreverse fg:ansiwhite"),  # Currently highlighted - bright
+        (
+            "highlighted",
+            "fg:ansimagenta bold underline",
+        ),  # Currently highlighted - magenta text with underline
         ("selected", "noreverse"),  # Selected item - no text color change
         ("checkbox", "fg:ansigray"),  # Unselected checkbox
         ("checkbox-selected", "fg:ansigreen bold"),  # Selected checkbox (green)
