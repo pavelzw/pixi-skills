@@ -114,6 +114,5 @@ git clone https://github.com/pavelzw/pixi-skills
 cd pixi-skills
 
 pixi run pre-commit-install
-pixi run postinstall
 pixi run test
 ```
