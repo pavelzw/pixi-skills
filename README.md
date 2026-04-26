@@ -61,6 +61,7 @@ A collection of ready-to-use skills is available at [skill-forge](https://prefix
 | Kilo Code | `.kilocode/skills/` | `~/.kilocode/skills/` |
 | Kiro | `.kiro/skills/` | `~/.kiro/skills/` |
 | Opencode | `.opencode/skills/` | `~/.opencode/skills/` |
+| Pi | `.pi/skills/` | `~/.pi/agent/skills/` |
 | Qoder | `.qoder/skills/` | `~/.qoder/skills/` |
 | Roo Code | `.roo/skills/` | `~/.roo/skills/` |
 | Trae | `.trae/skills/` | `~/.trae/skills/` |

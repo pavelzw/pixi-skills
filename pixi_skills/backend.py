@@ -19,6 +19,7 @@ class BackendName(StrEnum):
     KIRO = "kiro"
     KILOCODE = "kilocode"
     OPENCODE = "opencode"
+    PI = "pi"
     QODER = "qoder"
     ROOCODE = "roocode"
     TRAE = "trae"
@@ -189,6 +190,18 @@ class OpencodeBackend(Backend):
             return Path.home() / ".opencode/skills"
 
 
+class PiBackend(Backend):
+    """Backend for pi coding agent."""
+
+    name = "pi"
+
+    def get_skills_dir(self, scope: Scope) -> Path:
+        if scope == Scope.LOCAL:
+            return Path(".pi/skills")
+        else:
+            return Path.home() / ".pi/agent/skills"
+
+
 class WindsurfBackend(Backend):
     """Backend for Windsurf."""
 
@@ -273,6 +286,7 @@ BACKENDS: dict[BackendName, type[Backend]] = {
     BackendName.KIRO: KiroBackend,
     BackendName.KILOCODE: KiloCodeBackend,
     BackendName.OPENCODE: OpencodeBackend,
+    BackendName.PI: PiBackend,
     BackendName.QODER: QoderBackend,
     BackendName.ROOCODE: RooCodeBackend,
     BackendName.TRAE: TraeBackend,
