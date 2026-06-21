@@ -2,6 +2,7 @@ import dataclasses
 import os
 import re
 import warnings
+from collections.abc import Iterator
 from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
@@ -99,22 +100,20 @@ def parse_skill_md(skill_md: Path) -> tuple[str | None, str]:
     return name, str(description)
 
 
-def discover_local_skills(env: str) -> list[Skill]:
+def discover_local_skills(env: str) -> Iterator[Skill]:
     """Discover local skills from the pixi environment.
 
     Args:
         env: The pixi environment name to search in.
     """
-    skills = []
     local_base = Path(f".pixi/envs/{env}/share/agent-skills")
-    if local_base.exists():
-        for skill_dir in local_base.iterdir():
-            if skill_dir.is_dir() and (skill_dir / "SKILL.md").exists():
-                try:
-                    skills.append(Skill.from_directory(skill_dir, Scope.LOCAL))
-                except ValueError as e:
-                    warnings.warn(f"Skipping invalid skill at {skill_dir}: {e}")
-    return skills
+    for filepath in local_base.glob("**/SKILL.md"):
+        try:
+            skill = Skill.from_directory(filepath.parent, Scope.LOCAL)
+        except ValueError as e:
+            warnings.warn(f"Skipping invalid skill at {filepath.parent}: {e}")
+        else:
+            yield skill
 
 
 def _global_envs_dir() -> Path:
@@ -125,15 +124,18 @@ def _global_envs_dir() -> Path:
     return Path.home() / ".pixi/envs"
 
 
-def discover_global_skills() -> list[Skill]:
-    """Discover global skills from the global pixi envs directory."""
-    skills = []
+def discover_global_skills(env: str = "agent-skill-*") -> Iterator[Skill]:
+    """Discover global skills from the global pixi envs directory.
+
+    Args:
+        env: The pixi environment pattern to search in (supports glob syntax).
+
+    """
     global_pixi = _global_envs_dir()
-    if global_pixi.exists():
-        for skill_dir in global_pixi.glob("agent-skill-*/share/agent-skills/*"):
-            if skill_dir.is_dir() and (skill_dir / "SKILL.md").exists():
-                try:
-                    skills.append(Skill.from_directory(skill_dir, Scope.GLOBAL))
-                except ValueError as e:
-                    warnings.warn(f"Skipping invalid skill at {skill_dir}: {e}")
-    return skills
+    for filepath in global_pixi.glob(f"{env}/share/agent-skills/**/SKILL.md"):
+        try:
+            skill = Skill.from_directory(filepath.parent, Scope.GLOBAL)
+        except ValueError as e:
+            warnings.warn(f"Skipping invalid skill at {filepath.parent}: {e}")
+        else:
+            yield skill
