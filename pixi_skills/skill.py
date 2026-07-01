@@ -15,23 +15,23 @@ class Scope(StrEnum):
     Ordered by definition order (LOCAL < GLOBAL).
     """
 
-    def __lt__(self, other: "Scope") -> bool:  # type: ignore[invalid-method-override, override]
+    def __lt__(self, other: "Scope") -> bool:  # ty: ignore[invalid-method-override]
         if not isinstance(other, Scope):
             return NotImplemented
         members = list(Scope)
         return members.index(self) < members.index(other)
 
-    def __le__(self, other: "Scope") -> bool:  # type: ignore[invalid-method-override, override]
+    def __le__(self, other: "Scope") -> bool:  # ty: ignore[invalid-method-override]
         if not isinstance(other, Scope):
             return NotImplemented
         return self == other or self < other
 
-    def __gt__(self, other: "Scope") -> bool:  # type: ignore[invalid-method-override, override]
+    def __gt__(self, other: "Scope") -> bool:  # ty: ignore[invalid-method-override]
         if not isinstance(other, Scope):
             return NotImplemented
         return other < self
 
-    def __ge__(self, other: "Scope") -> bool:  # type: ignore[invalid-method-override, override]
+    def __ge__(self, other: "Scope") -> bool:  # ty: ignore[invalid-method-override]
         if not isinstance(other, Scope):
             return NotImplemented
         return self == other or self > other

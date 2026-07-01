@@ -144,7 +144,7 @@ class TestSkill:
     def test_frozen(self, tmp_path: Path) -> None:
         skill = Skill(Scope.LOCAL, "test", "desc", tmp_path)
         with pytest.raises(AttributeError):
-            skill.name = "other"  # type: ignore[misc]
+            skill.name = "other"  # ty: ignore[invalid-assignment]
 
 
 # --- Skill discovery ---
