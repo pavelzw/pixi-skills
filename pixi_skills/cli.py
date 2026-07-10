@@ -1,3 +1,4 @@
+import subprocess
 from importlib.metadata import version
 from typing import Annotated
 
@@ -262,6 +263,171 @@ def status(
                 console.print(table)
             else:
                 console.print(f"  [dim]No {scope.value} skills installed[/dim]")
+
+
+@app.command("install")
+def install_skill(
+    skill_name: Annotated[
+        str,
+        typer.Argument(help="Name of the skill to install."),
+    ],
+    scope: Annotated[
+        Scope | None,
+        typer.Option(
+            "--scope",
+            "-s",
+            help="Scope to install in (local or global).",
+        ),
+    ] = None,
+    backend: Annotated[
+        BackendName | None,
+        typer.Option(
+            "--backend",
+            "-b",
+            help="Backend to link the skill for.",
+        ),
+    ] = None,
+    channel: Annotated[
+        str,
+        typer.Option(
+            "--channel",
+            "-c",
+            help="Channel to install the skill from (global only).",
+        ),
+    ] = "https://prefix.dev/skill-forge",
+    env: Annotated[
+        str,
+        typer.Option(
+            "--env",
+            "-e",
+            help="Pixi environment to search for local skills.",
+        ),
+    ] = "default",
+) -> None:
+    """Install a skill and link it for the selected backend.
+
+    By default, installs the skill globally using pixi global install.
+    Use --scope local to add it as a dependency to the current project instead.
+    """
+    # Validate --env is only used with local scope
+    if scope == Scope.GLOBAL and env != "default":
+        console.print("[red]--env can only be used with local scope[/red]")
+        raise typer.Exit(1)
+
+    # Prompt for missing options
+    if scope is None:
+        if env != "default":
+            console.print("Using the local scope as environment was requested")
+            scope = Scope.LOCAL
+        else:
+            scope = _prompt_for_scope()
+
+    package_name = f"agent-skill-{skill_name}"
+
+    if scope == Scope.LOCAL:
+        console.print(f"[cyan]Adding {package_name} to the current project...[/cyan]")
+        result = subprocess.run(
+            ["pixi", "add", package_name],
+            capture_output=True,
+            text=True,
+        )
+    else:
+        console.print(
+            f"[cyan]Installing {package_name} globally from {channel}...[/cyan]"
+        )
+        result = subprocess.run(
+            ["pixi", "global", "install", "-c", channel, package_name],
+            capture_output=True,
+            text=True,
+        )
+
+    if result.returncode != 0:
+        console.print(f"[red]Failed to install {package_name}:[/red]")
+        if result.stderr:
+            console.print(f"[red]{result.stderr.strip()}[/red]")
+        raise typer.Exit(1)
+
+    console.print(f"[green]Successfully installed {package_name}[/green]")
+
+    # Discover the newly installed skill and link it
+    if scope == Scope.LOCAL:
+        skills = discover_local_skills(env)
+    else:
+        skills = discover_global_skills()
+
+    matching = [s for s in skills if s.name == skill_name]
+    if not matching:
+        console.print(
+            f"[yellow]Skill installed but could not find '{skill_name}' "
+            f"in discovered skills to link.[/yellow]"
+        )
+        raise typer.Exit(0)
+
+    skill = matching[0]
+
+    # Prompt for backend if not specified
+    if backend is None:
+        backend = _prompt_for_backend()
+
+    backend_instance = get_backend(backend)
+    try:
+        symlink_path = backend_instance.install(skill)
+        console.print(
+            f"[green]Linked '{skill_name}' for {backend.value} at {symlink_path}[/green]"
+        )
+    except ValueError as e:
+        console.print(f"[red]Failed to link '{skill_name}': {e}[/red]")
+        raise typer.Exit(1)
+
+
+@app.command("update")
+def update_skill(
+    skill_name: Annotated[
+        str,
+        typer.Argument(help="Name of the skill to update."),
+    ],
+    scope: Annotated[
+        Scope | None,
+        typer.Option(
+            "--scope",
+            "-s",
+            help="Scope to update (local or global).",
+        ),
+    ] = None,
+) -> None:
+    """Update an installed skill to its latest version.
+
+    By default, updates a globally installed skill using pixi global upgrade.
+    Use --scope local to update a local project dependency instead.
+    """
+    # Prompt for missing options
+    if scope is None:
+        scope = _prompt_for_scope()
+
+    package_name = f"agent-skill-{skill_name}"
+
+    if scope == Scope.LOCAL:
+        console.print(f"[cyan]Updating {package_name} in the current project...[/cyan]")
+        result = subprocess.run(
+            ["pixi", "update", package_name],
+            capture_output=True,
+            text=True,
+        )
+    else:
+        console.print(f"[cyan]Upgrading {package_name} globally...[/cyan]")
+        result = subprocess.run(
+            ["pixi", "global", "upgrade", package_name],
+            capture_output=True,
+            text=True,
+        )
+
+    if result.returncode != 0:
+        console.print(f"[red]Failed to update {package_name}:[/red]")
+        if result.stderr:
+            console.print(f"[red]{result.stderr.strip()}[/red]")
+        raise typer.Exit(1)
+
+    console.print(f"[green]Successfully updated {package_name}[/green]")
 
 
 if __name__ == "__main__":
