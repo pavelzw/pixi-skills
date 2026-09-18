@@ -226,6 +226,7 @@ class TestDiscoverGlobalSkills:
         assert len(skills) == 1
         assert skills[0].name == "typst"
         assert skills[0].scope == Scope.GLOBAL
+        assert skills[0].environment == "agent-skill-typst"
 
     def test_empty_when_no_dir(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
@@ -233,16 +234,33 @@ class TestDiscoverGlobalSkills:
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
         assert discover_global_skills() == []
 
-    def test_skips_non_agent_skill_envs(
+    def test_discovers_skills_from_any_global_env(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        # This env doesn't match the agent-skill-* pattern
         skill_dir = tmp_path / ".pixi/envs/other-env/share/agent-skills/s1"
         skill_dir.mkdir(parents=True)
         (skill_dir / "SKILL.md").write_text("---\ndescription: other\n---\n")
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
 
-        assert discover_global_skills() == []
+        skills = discover_global_skills()
+        assert len(skills) == 1
+        assert skills[0].name == "s1"
+        assert skills[0].environment == "other-env"
+
+    def test_keeps_same_named_skills_from_multiple_envs(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        for env in ["env-a", "env-b"]:
+            skill_dir = tmp_path / f".pixi/envs/{env}/share/agent-skills/shared"
+            skill_dir.mkdir(parents=True)
+            (skill_dir / "SKILL.md").write_text(
+                f"---\nname: shared\ndescription: from {env}\n---\n"
+            )
+        monkeypatch.setattr(Path, "home", lambda: tmp_path)
+
+        skills = discover_global_skills()
+        assert [skill.name for skill in skills] == ["shared", "shared"]
+        assert [skill.environment for skill in skills] == ["env-a", "env-b"]
 
     def test_respects_pixi_home(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch

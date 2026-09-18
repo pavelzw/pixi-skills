@@ -51,9 +51,12 @@ class Skill:
     name: str
     description: str = dataclasses.field(compare=False)
     path: Path = dataclasses.field(compare=False)
+    environment: str | None = dataclasses.field(default=None, compare=False)
 
     @classmethod
-    def from_directory(cls, path: Path, scope: Scope) -> "Skill":
+    def from_directory(
+        cls, path: Path, scope: Scope, environment: str | None = None
+    ) -> "Skill":
         """Load a skill from a directory containing SKILL.md."""
         skill_md = path / "SKILL.md"
         if not skill_md.exists():
@@ -63,7 +66,13 @@ class Skill:
         # Use directory name as skill name if not specified in frontmatter
         if name is None:
             name = path.name
-        return cls(scope=scope, name=name, description=description, path=path)
+        return cls(
+            scope=scope,
+            name=name,
+            description=description,
+            path=path,
+            environment=environment,
+        )
 
 
 def parse_skill_md(skill_md: Path) -> tuple[str | None, str]:
@@ -130,10 +139,16 @@ def discover_global_skills() -> list[Skill]:
     skills = []
     global_pixi = _global_envs_dir()
     if global_pixi.exists():
-        for skill_dir in global_pixi.glob("agent-skill-*/share/agent-skills/*"):
+        for skill_dir in sorted(global_pixi.glob("*/share/agent-skills/*")):
             if skill_dir.is_dir() and (skill_dir / "SKILL.md").exists():
                 try:
-                    skills.append(Skill.from_directory(skill_dir, Scope.GLOBAL))
+                    skills.append(
+                        Skill.from_directory(
+                            skill_dir,
+                            Scope.GLOBAL,
+                            environment=skill_dir.parents[2].name,
+                        )
+                    )
                 except ValueError as e:
                     warnings.warn(f"Skipping invalid skill at {skill_dir}: {e}")
     return skills
