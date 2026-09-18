@@ -129,6 +129,17 @@ class TestSkill:
         skill = Skill.from_directory(skill_dir, Scope.GLOBAL)
         assert skill.name == "custom-name"
 
+    def test_display_name_with_environment(self, tmp_path: Path) -> None:
+        skill = Skill(
+            Scope.GLOBAL,
+            "my-skill",
+            "desc",
+            tmp_path,
+            environment="tools",
+        )
+        assert skill.display_name() == "my-skill"
+        assert skill.display_name(disambiguate=True) == "my-skill (tools)"
+
     def test_from_directory_no_skill_md(self, tmp_path: Path) -> None:
         skill_dir = tmp_path / "empty"
         skill_dir.mkdir()

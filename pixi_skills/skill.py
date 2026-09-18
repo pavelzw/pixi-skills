@@ -74,6 +74,12 @@ class Skill:
             environment=environment,
         )
 
+    def display_name(self, *, disambiguate: bool = False) -> str:
+        """Return the skill name, optionally qualified by its environment."""
+        if disambiguate and self.environment is not None:
+            return f"{self.name} ({self.environment})"
+        return self.name
+
 
 def parse_skill_md(skill_md: Path) -> tuple[str | None, str]:
     """Parse SKILL.md to extract name and description from YAML frontmatter.

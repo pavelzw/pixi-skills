@@ -51,6 +51,24 @@ class TestList:
         result = runner.invoke(app, ["list", "--scope", "global"])
         assert result.exit_code == 0
 
+    def test_list_disambiguates_same_named_global_skills(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        for env in ["env-a", "env-b"]:
+            skill_dir = tmp_path / f".pixi/envs/{env}/share/agent-skills/shared"
+            skill_dir.mkdir(parents=True)
+            (skill_dir / "SKILL.md").write_text(
+                f"---\nname: shared\ndescription: from {env}\n---\n"
+            )
+        monkeypatch.chdir(tmp_path)
+        monkeypatch.setattr(Path, "home", lambda: tmp_path)
+
+        result = runner.invoke(app, ["list", "--scope", "global"])
+
+        assert result.exit_code == 0
+        assert "shared (env-a)" in result.output
+        assert "shared (env-b)" in result.output
+
     def test_list_env_with_global_scope_fails(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     ) -> None:

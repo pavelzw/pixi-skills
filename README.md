@@ -47,6 +47,8 @@ A collection of ready-to-use skills is available at [skill-forge](https://prefix
 - **Local** skills are discovered from the current project's pixi environment at `.pixi/envs/<env>/share/agent-skills/`.
 - **Global** skills are discovered from globally installed pixi packages at `~/.pixi/envs/*/share/agent-skills/`.
 
+If multiple global environments provide a skill with the same name, pixi-skills shows the environment name in parentheses and lets you install one source at a time.
+
 ### Supported backends
 
 | Backend | Local directory | Global directory |
