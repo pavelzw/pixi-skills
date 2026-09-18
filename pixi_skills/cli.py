@@ -212,18 +212,23 @@ def manage_skills(
         # cancelled by user
         raise typer.Exit(0)
 
-    selected_names = {s.name for s in selected}
+    selected_names = {skill.name for skill in selected}
 
-    # Determine what to install and uninstall
-    to_install = [s for s in selected if s.name not in installed_skills]
+    # Installing a same-named skill from a different source replaces its existing
+    # symlink. Only skills that are no longer selected need a separate uninstall.
+    to_install_or_replace = [
+        skill
+        for skill in selected
+        if installed_skills.get(skill.name) != skill.path.resolve()
+    ]
     to_uninstall = [name for name in installed_skills if name not in selected_names]
 
-    if not to_install and not to_uninstall:
+    if not to_install_or_replace and not to_uninstall:
         console.print("[dim]No changes.[/dim]")
         return
 
     # Install new skills
-    for skill in to_install:
+    for skill in to_install_or_replace:
         try:
             symlink_path = backend_instance.install(skill)
             console.print(f"[green]Installed '{skill.name}' at {symlink_path}[/green]")
