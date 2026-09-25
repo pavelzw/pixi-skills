@@ -4,6 +4,7 @@ import pytest
 from typer.testing import CliRunner
 
 from pixi_skills.cli import app
+from pixi_skills.skill import Skill
 
 runner = CliRunner()
 
@@ -50,6 +51,24 @@ class TestList:
         monkeypatch.setattr(Path, "home", lambda: tmp_path)
         result = runner.invoke(app, ["list", "--scope", "global"])
         assert result.exit_code == 0
+
+    def test_list_disambiguates_same_named_global_skills(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        for env in ["env-a", "env-b"]:
+            skill_dir = tmp_path / f".pixi/envs/{env}/share/agent-skills/shared"
+            skill_dir.mkdir(parents=True)
+            (skill_dir / "SKILL.md").write_text(
+                f"---\nname: shared\ndescription: from {env}\n---\n"
+            )
+        monkeypatch.chdir(tmp_path)
+        monkeypatch.setattr(Path, "home", lambda: tmp_path)
+
+        result = runner.invoke(app, ["list", "--scope", "global"])
+
+        assert result.exit_code == 0
+        assert "shared (env-a)" in result.output
+        assert "shared (env-b)" in result.output
 
     def test_list_env_with_global_scope_fails(
         self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
@@ -133,3 +152,38 @@ class TestManage:
         )
         assert result.exit_code == 1
         assert "no local skills available" in result.output.lower()
+
+    def test_manage_switches_between_same_named_global_skills(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        skill_dirs = {}
+        for env in ["env-a", "env-b"]:
+            skill_dir = tmp_path / f".pixi/envs/{env}/share/agent-skills/shared"
+            skill_dir.mkdir(parents=True)
+            (skill_dir / "SKILL.md").write_text(
+                f"---\nname: shared\ndescription: from {env}\n---\n"
+            )
+            skill_dirs[env] = skill_dir
+
+        installed_dir = tmp_path / ".claude/skills"
+        installed_dir.mkdir(parents=True)
+        installed_skill = installed_dir / "shared"
+        installed_skill.symlink_to(skill_dirs["env-a"])
+
+        monkeypatch.chdir(tmp_path)
+        monkeypatch.setattr(Path, "home", lambda: tmp_path)
+
+        def select_env_b(
+            skills: list[Skill], installed: dict[str, Path]
+        ) -> list[Skill]:
+            assert installed == {"shared": skill_dirs["env-a"].resolve()}
+            return [skill for skill in skills if skill.environment == "env-b"]
+
+        monkeypatch.setattr("pixi_skills.cli.select_skills_interactively", select_env_b)
+
+        result = runner.invoke(
+            app, ["manage", "--backend", "claude", "--scope", "global"]
+        )
+
+        assert result.exit_code == 0
+        assert installed_skill.resolve() == skill_dirs["env-b"].resolve()

@@ -1,3 +1,4 @@
+from collections import Counter
 from importlib.metadata import version
 from typing import Annotated
 
@@ -39,9 +40,14 @@ def _print_skills_table(title: str, skills: list) -> None:
     table.add_column("Description", max_width=60, no_wrap=True)
     table.add_column("Path", style="dim")
 
+    ambiguous_names = {
+        name
+        for name, count in Counter(skill.name for skill in skills).items()
+        if count > 1
+    }
     for skill in sorted(skills):
         table.add_row(
-            skill.name,
+            skill.display_name(disambiguate=skill.name in ambiguous_names),
             skill.description,
             str(skill.path),
         )
@@ -198,26 +204,31 @@ def manage_skills(
         raise typer.Exit(1)
 
     # Get currently installed skills
-    installed_names = {name for name, _ in backend_instance.get_installed_skills(scope)}
+    installed_skills = dict(backend_instance.get_installed_skills(scope))
 
     # Show interactive selector with installed skills pre-selected
-    selected = select_skills_interactively(available_skills, installed_names)
+    selected = select_skills_interactively(available_skills, installed_skills)
     if selected is None:
         # cancelled by user
         raise typer.Exit(0)
 
-    selected_names = {s.name for s in selected}
+    selected_names = {skill.name for skill in selected}
 
-    # Determine what to install and uninstall
-    to_install = [s for s in selected if s.name not in installed_names]
-    to_uninstall = [name for name in installed_names if name not in selected_names]
+    # Installing a same-named skill from a different source replaces its existing
+    # symlink. Only skills that are no longer selected need a separate uninstall.
+    to_install_or_replace = [
+        skill
+        for skill in selected
+        if installed_skills.get(skill.name) != skill.path.resolve()
+    ]
+    to_uninstall = [name for name in installed_skills if name not in selected_names]
 
-    if not to_install and not to_uninstall:
+    if not to_install_or_replace and not to_uninstall:
         console.print("[dim]No changes.[/dim]")
         return
 
     # Install new skills
-    for skill in to_install:
+    for skill in to_install_or_replace:
         try:
             symlink_path = backend_instance.install(skill)
             console.print(f"[green]Installed '{skill.name}' at {symlink_path}[/green]")
