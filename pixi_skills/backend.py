@@ -9,6 +9,7 @@ from pixi_skills.skill import Scope, Skill
 class BackendName(StrEnum):
     """Available backend names."""
 
+    AGENTS = "agents"
     CLAUDE = "claude"
     CLINE = "cline"
     CODEX = "codex"
@@ -94,6 +95,18 @@ class Backend(ABC):
         )
 
 
+class AgentsBackend(Backend):
+    """Backend for the `.agents/skills` directory shared by many agents."""
+
+    name = "agents"
+
+    def get_skills_dir(self, scope: Scope) -> Path:
+        if scope == Scope.LOCAL:
+            return Path(".agents/skills")
+        else:
+            return Path.home() / ".agents/skills"
+
+
 class ClaudeBackend(Backend):
     """Backend for Claude Code."""
 
@@ -106,16 +119,10 @@ class ClaudeBackend(Backend):
             return Path.home() / ".claude/skills"
 
 
-class ClineBackend(Backend):
+class ClineBackend(AgentsBackend):
     """Backend for Cline."""
 
     name = "cline"
-
-    def get_skills_dir(self, scope: Scope) -> Path:
-        if scope == Scope.LOCAL:
-            return Path(".agents/skills")
-        else:
-            return Path.home() / ".agents/skills"
 
 
 class CrushBackend(Backend):
@@ -142,16 +149,10 @@ class CursorBackend(Backend):
             return Path.home() / ".cursor/skills"
 
 
-class CodexBackend(Backend):
+class CodexBackend(AgentsBackend):
     """Backend for Codex."""
 
     name = "codex"
-
-    def get_skills_dir(self, scope: Scope) -> Path:
-        if scope == Scope.LOCAL:
-            return Path(".codex/skills")
-        else:
-            return Path.home() / ".codex/skills"
 
 
 class CopilotBackend(Backend):
@@ -276,6 +277,7 @@ class RooCodeBackend(Backend):
 
 # Registry of available backends
 BACKENDS: dict[BackendName, type[Backend]] = {
+    BackendName.AGENTS: AgentsBackend,
     BackendName.CLAUDE: ClaudeBackend,
     BackendName.CLINE: ClineBackend,
     BackendName.CODEX: CodexBackend,

@@ -4,6 +4,7 @@ import pytest
 
 from pixi_skills.backend import (
     BACKENDS,
+    AgentsBackend,
     Backend,
     BackendName,
     ClaudeBackend,
@@ -52,11 +53,12 @@ class TestBackendRegistry:
 @pytest.mark.parametrize(
     "backend_cls,local_dir,global_suffix",
     [
+        (AgentsBackend, ".agents/skills", ".agents/skills"),
         (ClaudeBackend, ".claude/skills", ".claude/skills"),
         (ClineBackend, ".agents/skills", ".agents/skills"),
         (CrushBackend, ".crush/skills", ".crush/skills"),
         (CursorBackend, ".cursor/skills", ".cursor/skills"),
-        (CodexBackend, ".codex/skills", ".codex/skills"),
+        (CodexBackend, ".agents/skills", ".agents/skills"),
         (CopilotBackend, ".github/skills", ".github/skills"),
         (GeminiBackend, ".gemini/skills", ".gemini/skills"),
         (KiloCodeBackend, ".kilocode/skills", ".kilocode/skills"),
