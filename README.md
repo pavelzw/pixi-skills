@@ -53,9 +53,10 @@ If multiple global environments provide a skill with the same name, pixi-skills 
 
 | Backend | Local directory | Global directory |
 |---------|----------------|-----------------|
+| Agents | `.agents/skills/` | `~/.agents/skills/` |
 | Claude | `.claude/skills/` | `~/.claude/skills/` |
 | Cline | `.agents/skills/` | `~/.agents/skills/` |
-| Codex | `.codex/skills/` | `~/.codex/skills/` |
+| Codex | `.agents/skills/` | `~/.agents/skills/` |
 | Copilot | `.github/skills/` | `~/.github/skills/` |
 | Crush | `.crush/skills/` | `~/.crush/skills/` |
 | Cursor | `.cursor/skills/` | `~/.cursor/skills/` |
@@ -70,6 +71,11 @@ If multiple global environments provide a skill with the same name, pixi-skills 
 | Windsurf | `.windsurf/skills/` | `~/.codeium/windsurf/skills/` |
 
 Skills are installed as relative symlinks for portability.
+
+The `agents` backend links skills into the `.agents/skills/` directory that many agents read.
+The `cline` and `codex` backends use the same directory.
+Earlier versions installed Codex skills into `.codex/skills/`, which Codex no longer reads.
+Remove those symlinks and reinstall the skills with `pixi-skills manage --backend codex`.
 
 ## Usage
 
